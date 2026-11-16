@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ku">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بۆ نازدارا من 💖</title>
+    <style>
+        body {
+            background-color: #ffe6ed;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+        .heart-bg {
+            position: absolute;
+            color: rgba(255, 77, 109, 0.2);
+            font-size: 24px;
+            animation: float 6s linear infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(100vh) scale(0.8); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1.2); opacity: 0; }
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 380px;
+            width: 90%;
+            z-index: 10;
+            border: 2px solid #ffccd5;
+        }
+        p {
+            color: #d63384;
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .maze-container {
+            position: relative;
+            background: #fff5f7;
+            border: 3px solid #ff4d6d;
+            border-radius: 12px;
+            margin: 0 auto 15px auto;
+            width: 260px;
+            height: 260px;
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .cell {
+            background-color: #ffffff;
+            border: 1px solid #ffe0e6;
+            border-radius: 4px;
+        }
+        .cell.wall {
+            background-color: #ffb3c1;
+        }
+        .player {
+            background-color: #ff4d6d;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.1s ease;
+        }
+        .target {
+            background-color: #ffccd5;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            justify-content: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .ctrl-btn {
+            background-color: #ff4d6d;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 40px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 3px 8px rgba(255, 77, 109, 0.3);
+        }
+        .ctrl-btn:active {
+            background-color: #e03155;
+            transform: scale(0.95);
+        }
+        .empty-space {
+            visibility: hidden;
+        }
+
+        .success-box {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .success-content {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 320px;
+            width: 85%;
+            animation: popUp 0.3s ease;
+        }
+        @keyframes popUp {
+            0% { transform: scale(0.7); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .letter-heading {
+            color: #d63384;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 0;
+            margin-bottom: 12px;
+        }
+        .success-text {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: right;
+            direction: rtl;
+            min-height: 90px;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="heart-bg" style="left: 10%; animation-delay: 0s;">❤️</div>
+    <div class="heart-bg" style="left: 30%; animation-delay: 2s;">💖</div>
+    <div class="heart-bg" style="left: 70%; animation-delay: 1s;">🤍</div>
+    <div class="heart-bg" style="left: 85%; animation-delay: 3s;">💍</div>
+
+    <div class="card">
+        <p>رێکا خۆ ببە دا بگەهیە نامەیا ئەڤینێ 💖</p>
+        
+        <div class="maze-container" id="maze"></div>
+
+        <div class="controls">
+            <div class="empty-space"></div>
+            <button class="ctrl-btn" onclick="move('up')">⬆️</button>
+            <div class="empty-space"></div>
+            <button class="ctrl-btn" onclick="move('left')">⬅️</button>
+            <button class="ctrl-btn" onclick="move('down')">⬇️</button>
+            <button class="ctrl-btn" onclick="move('right')">➡️</button>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="success-box" id="successModal">
+        <div class="success-content">
+            <h3 id="letterTitle" class="letter-heading"></h3>
+            <div class="success-text" id="letterText"></div>
+            
+            <div class="nav-buttons">
+                <button class="ctrl-btn" id="prevBtn" style="flex: 1; background-color: #adb5bd;" onclick="changeLetter(-1)">بەری ⬅️</button>
+                <button class="ctrl-btn" id="nextBtn" style="flex: 1;" onclick="changeLetter(1)">دیڤدا ➔</button>
+            </div>
+            <button class="ctrl-btn" id="resetGameBtn" style="width: 100%; height: 40px; margin-top: 10px; display: none;" onclick="resetGame()">دووبارە لێدان 🎮</button>
+        </div>
+    </div>
+
+    <script>
+        const size = 8;
+        const initialMap = [
+            [2, 0, 1, 0, 0, 0, 1, 0],
+            [1, 0, 1, 0, 1, 0, 1, 0],
+            [0, 0, 0, 0, 1, 0, 0, 0],
+            [0, 1, 1, 0, 1, 1, 1, 0],
+            [0, 0, 1, 0, 0, 0, 0, 0],
+            [1, 0, 1, 1, 1, 0, 1, 1],
+            [1, 0, 0, 0, 1, 0, 0, 3],
+            [1, 1, 1, 0, 0, 0, 1, 1]
+        ];
+
+        let map = JSON.parse(JSON.stringify(initialMap));
+        let playerPos = { r: 0, c: 0 };
+
+        const letters = [
+            {
+                title: "سوپاس بۆ هاتنا تە د ژیانا من دا... ✨❤️",
+                text: "هەندەک جارا مروف دچیتە د خەونەکێ دا و نەڤێت ژ خەو ڕابیت، هەبوونا تە ب من هەمان تشتە. گەلەک سوپاس ژیانا من یا تاری ڕوون کر و ب هەبوونا خۆ دلێ من ئارام دکەی و من کە یفخوش دکەی. تە ئەز فێرکرم کا چەوا مروف مروڤەکێ دی بقیت و ببارێزیت، و سوپاس بۆ خودایی مە زن کو تو کریه د ژیانا من دا هەی مالامن ❤️"
+            },
+            {
+                title: "چافێن تە دونیایا منن! 🤎🥺",
+                text: "چافێن تە ئە و جهە نە کو ئەز هەمی خەمین خولی ژبیر دکەم. ئەز سەهەدکەمە چافێن تە و هەمی ئاریشه و مانديبوونئین دونیا ب بۆرينا چرکه یەکێ ژبیر دکەم چاف خەزالامن.. 🤎"
+            },
+            {
+                title: "توو هەمی ژیانا من و نازدارا دڵێ منی! 💍✨",
+                text: "خۆدێ تە بۆ من بهێلیت و هەرچەندە ڕێکا ئەڤینێ درێژ بیت، ئەز دێ هەردەم دەف تە بم هەردەم ئەز تە دبينم، دڵێ من دیسان ژ نوی دکەڤیته ژیانی تو ب تنێ کەسەک نینی د ژیانا من دا، تو خودانا هەمی کە یف و دلخۆشییا منی 🧸❤️"
+            },
+            {
+                title: "پەناگەها دڵی من 💖",
+                text: "پەیڤ بێدەنگ دەبن ل بەرامبەری تە دڵی من د لەرزیت دگەل ناڤێ تە و تە ژیانا من کرە بەهشتکا مە زن هەتا کو ئەف جیهانە بمینیت توژی دی هەر دناف دلی من دابی ب هەمی هێزا خۆ، ئەز تە دەپارێزم د گیانی خۆ دا چنکو تو ب تنێ ڕۆناهییا پینگافین منی و د ڤێ رێیا دیر و درێژا پاشەڕۆژیدا ئەز و تو دی دو کەسین بێجودایی بین، هەتا دوماهیی. 🫀"
+            },
+            {
+                title: "تا دوماهیییا ڤێ جیهانی... ❤️♾️",
+                text: "هەتا دەم براوەستیت و ئەف عەسمانه نەمینیت و دەريا هەشک دبن حەشکرا من دێ بوته هەراگەش و ساخ بیت هەەی ڕۆناهیا چافێن تە ناڤێ تە لەسەر دلی من یی هاتیە نەخشاندن و ئەز دزانم تو چارەنافیس و خوزیا من! .. من یا راسته قینه یی 💖✨"
+            }
+        ];
+        
+        let currentLetterIdx = 0;
+
+        function updateLetterDisplay() {
+            document.getElementById('letterTitle').innerText = letters[currentLetterIdx].title;
+            document.getElementById('letterText').innerText = letters[currentLetterIdx].text;
+            
+            document.getElementById('prevBtn').style.display = (currentLetterIdx === 0) ? 'none' : 'block';
+            if(currentLetterIdx === letters.length - 1) {
+                document.getElementById('nextBtn').style.display = 'none';
+                document.getElementById('resetGameBtn').style.display = 'block';
+            } else {
+                document.getElementById('nextBtn').style.display = 'block';
+                document.getElementById('resetGameBtn').style.display = 'none';
+            }
+        }
+
+        function changeLetter(direction) {
+            currentLetterIdx += direction;
+            if(currentLetterIdx < 0) currentLetterIdx = 0;
+            if(currentLetterIdx >= letters.length) currentLetterIdx = letters.length - 1;
+            updateLetterDisplay();
+        }
+
+        function findChars() {
+            for(let r=0; r<size; r++) {
+                for(let c=0; c<size; c++) {
+                    if(map[r][c] === 2) playerPos = { r, c };
+                }
+            }
+        }
+
+        function drawMaze() {
+            const mazeEl = document.getElementById('maze');
+            mazeEl.innerHTML = '';
+            for(let r=0; r<size; r++) {
+                for(let c=0; c<size; c++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    if(map[r][c] === 1) cell.classList.add('wall');
+                    else if(map[r][c] === 2) {
+                        cell.classList.add('player');
+                        cell.innerHTML = '🧸';
+                    }
+                    else if(map[r][c] === 3) {
+                        cell.classList.add('target');
+                        cell.innerHTML = '💌';
+                    }
+                    mazeEl.appendChild(cell);
+                }
+            }
+        }
